@@ -1,0 +1,17 @@
+name: decode-images
+on:
+  push:
+    paths: ['**/*.b64']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          find . -name '*.b64' -not -path './.git/*' | while read f; do base64 -d "$f" > "${f%.b64}"; git rm -q "$f"; git add "${f%.b64}"; done
+          git config user.name github-actions
+          git config user.email github-actions@users.noreply.github.com
+          git diff --cached --quiet || (git commit -m 'Decode images' && git push)
